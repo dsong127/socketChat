@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>Socket Chat</title>
+    
+  </head>
+  <body>
+
+    <div class="container">
+      <select id="rooms">
+          <option disabled selected value> -- </option>
+          <option>main</option>
+      </select>
+      <input id="joinButton" type="button" value="Join">
+      <input id="leaveButton" type="button" value="Leave">
+      <input id="listButton" type="button" value="List users">
+      <input id="newRoomName" type="text" placeholder="New Room">
+      <input id="createButton" type="button" value="Create">
+    </div>
+
+    <div calss="container">
+      <select id="clients"></select>
+      <input id="message" type="text" placeholder="message">
+      <input id="sendButton" type="button" value="DM">
+      <input id="roomSendButton" type="button" value="Send to group">
+      <br>  
+      <pre id="output"></pre>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    
+    <script type="text/javascript">
+      var socket = io.connect('http://localhost:8000/');
+      
+      // Joins main room on default
+      socket.on('connect', () => {
+        socket.emit('joinRoom', 'main');
+      });
+
+			socket.on('clients', data => {
+				$('#clients')
+					.empty()
+					.each(function() {
+						for (var i = 0; i < data.strClients.length; i += 1) {
+							jQuery(this)
+								.append(jQuery('<option></option>')
+									.val(data.strClients[i])
+									.text(data.strClients[i])
+								);
+							if (data.strClients[i] === socket.id) {
+								jQuery(this).find('option').last()
+									.text(data.strClients[i] + ' - me');
+							}
+						}
+					});
+      });
+      
+      socket.on('userList', data => {
+        $('#output')
+            .prepend(`Users in room ${data.room}: ${data.clients}\n`);  
+      });        
+
+			socket.on('message', data => {
+				$('#output')
+					.prepend(`${data.strFrom} to ${data.strTo}: ${data.strMessage}\n`);
+      });
+
+      socket.on('newUser', data => {
+        $('#output')
+					.prepend(`server to ${data.room}: ${data.client} joined the room\n`);
+      });
+
+      socket.on('userLeft', data => {
+        $('#output')
+					.prepend(`server to ${data.room}: ${data.client} left the room\n`);
+      });
+
+      socket.on('roomMessage', data => {
+        $('#output')
+					.prepend(`${data.from} to ${data.to}: ${data.message}\n`);
+      });
+
+      socket.on('updateRooms', data => {
+        $('#rooms').empty();
+					$.each(data.rooms, (k,v) => {
+              $('#rooms')
+								.append(jQuery('<option></option>')
+									.val(v)
+									.text(v)
+								);
+          });
+			});
+  
+			$('#sendButton')
+				.on('click', () => {
+					socket.emit('message', {
+						'strTo': $('#clients').val(),
+						'strMessage': $('#message').val()
+					});
+        });
+
+      $('#roomSendButton')
+        .on('click', () => {
+            socket.emit('roomMessage', {
+              'room': $('#rooms').val(),
+              'message': $('#message').val()
+            });
+        });
+
+      $('#listButton')
+        .on('click', () => {
+          socket.emit('listUsers', $('#rooms').val());
+      });
+
+      $('#joinButton')
+        .on('click', () => {
+          socket.emit('joinRoom', $('#rooms').val());
+        });
+
+      $('#createButton')
+        .on('click', () => {
+          socket.emit('createRoom', $('#newRoomName').val());
+        });
+
+      $('#leaveButton')
+        .on('click', () => {
+          socket.emit('leaveRoom', $('#rooms').val());
+        });
+		</script>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    
+  </body>
+</html>
