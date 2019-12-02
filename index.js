@@ -5,8 +5,23 @@ var io = require('socket.io')(http);
 var clientsArr = [];
 var roomsArr = ['main'];
 
+server = http.listen(8000, function(){
+  console.log('listening on *:8000');
+});
+
+
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
+});
+
+process.on('SIGINT', function() {
+  console.log('SIGINTT');
+  io.emit('message', {
+    strFrom: 'server',
+    strTo: 'everyone',
+    strMessage: 'server shuting downnnnnn'
+  });
+  process.exit();
 });
 
 io.on('connection', function(socket){
@@ -102,9 +117,4 @@ io.on('connection', function(socket){
 		});
 		
 	});
-});
-
-
-http.listen(8000, function(){
-  console.log('listening on *:8000');
 });
