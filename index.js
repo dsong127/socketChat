@@ -5,8 +5,10 @@ var io = require('socket.io')(http);
 var clientsArr = [];
 var roomsArr = ['main'];
 
-server = http.listen(8000, function(){
-  console.log('listening on *:8000');
+const PORT = process.env.PORT || 8000;
+
+server = http.listen(PORT, function(){
+  console.log(`listening on *:${PORT}`);
 });
 
 
@@ -15,7 +17,6 @@ app.get('/', function(req, res){
 });
 
 process.on('SIGINT', function() {
-  console.log('SIGINTT');
   io.emit('message', {
     strFrom: 'server',
     strTo: 'everyone',
@@ -97,11 +98,10 @@ io.on('connection', function(socket){
   socket.on('listUsers', room => {
     let users = []
     io.in(room).clients((err , clients) => {
-      console.log(`clients: ${clients}`)
+      // console.log(`clients: ${clients}`)
       io.to(socket.id).emit('userList', {'clients': clients, 'room': room});
     });
 
-    
   });
 
 	socket.on('disconnect', function() {
