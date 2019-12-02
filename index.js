@@ -16,14 +16,19 @@ app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
 
-process.on('SIGINT', function() {
+process
+  .on('SIGINT', shutdown)
+  .on('SIGTERM', shutdown)
+  
+
+function shutdown(){
   io.emit('message', {
     strFrom: 'server',
     strTo: 'everyone',
     strMessage: 'server shuting downnnnnn'
   });
   process.exit();
-});
+};
 
 io.on('connection', function(socket){
 
