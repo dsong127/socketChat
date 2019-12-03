@@ -23,9 +23,9 @@ process
 
 function shutdown(){
   io.emit('message', {
-    strFrom: 'server',
-    strTo: 'everyone',
-    strMessage: 'server shuting downnnnnn'
+    from: 'server',
+    to: 'everyone',
+    message: 'server shuting downnnnnn'
   });
   process.exit();
 };
@@ -57,7 +57,7 @@ io.on('connection', function(socket){
   });
 
 	io.emit('clients', {
-		strClients: clientsArr
+		clients: clientsArr
   });
 
   io.emit('updateRooms', {
@@ -65,9 +65,9 @@ io.on('connection', function(socket){
   });
   
   io.emit('message', {
-		strFrom: 'server',
-		strTo: 'everyone',
-		strMessage: socket.id + ' connected'
+		from: 'server',
+		to: 'everyone',
+		message: socket.id + ' connected'
   });
   
   socket.on('roomMessage', data => {
@@ -78,24 +78,24 @@ io.on('connection', function(socket){
     });
   });
 
-	socket.on('message', function(objectData) {
-		if(objectData.strTo === 'everyone'){
+	socket.on('message', function(data) {
+		if(data.to === 'everyone'){
 			io.emit('message', {
-				strFrom: socket.id,
-				strTo: 'everyone',
-				strMessage: objectData.strMessage
+				from: socket.id,
+				to: 'everyone',
+				message: data.message
 			});
 		}
 		else {
-			io.to(objectData.strTo).emit('message', {
-				strFrom: socket.id,
-				strTo: objectData.strTo,
-				strMessage: objectData.strMessage
+			io.to(data.to).emit('message', {
+				from: socket.id,
+				to: data.to,
+				message: data.message
 			});
 			io.to(socket.id).emit('message', {
-				strFrom: socket.id,
-				strTo: objectData.strTo,
-				strMessage: objectData.strMessage
+				from: socket.id,
+				to: data.to,
+				message: data.message
 			});
 		}
   });
@@ -116,9 +116,9 @@ io.on('connection', function(socket){
 			strClients: clientsArr
 		});
 		io.emit('message', {
-			strFrom: 'server',
-			strTo: 'everyone',
-			strMessage: socket.id + ' disconnected'
+			from: 'server',
+			to: 'everyone',
+			message: socket.id + ' disconnected'
 		});
 		
 	});

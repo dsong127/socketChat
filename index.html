@@ -46,15 +46,15 @@
 				$('#clients')
 					.empty()
 					.each(function() {
-						for (var i = 0; i < data.strClients.length; i += 1) {
+						for (var i = 0; i < data.clients.length; i += 1) {
 							jQuery(this)
 								.append(jQuery('<option></option>')
-									.val(data.strClients[i])
-									.text(data.strClients[i])
+									.val(data.clients[i])
+									.text(data.clients[i])
 								);
-							if (data.strClients[i] === socket.id) {
+							if (data.clients[i] === socket.id) {
 								jQuery(this).find('option').last()
-									.text(data.strClients[i] + ' - me');
+									.text(data.clients[i] + ' - me');
 							}
 						}
 					});
@@ -67,7 +67,7 @@
 
 			socket.on('message', data => {
 				$('#output')
-					.prepend(`${data.strFrom} to ${data.strTo}: ${data.strMessage}\n`);
+					.prepend(`${data.from} to ${data.to}: ${data.strMessage}\n`);
       });
 
       socket.on('newUser', data => {
@@ -99,7 +99,7 @@
 			$('#sendButton')
 				.on('click', () => {
 					socket.emit('message', {
-						'strTo': $('#clients').val(),
+						'to': $('#clients').val(),
 						'strMessage': $('#message').val()
 					});
         });
