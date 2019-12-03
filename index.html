@@ -42,6 +42,7 @@
         socket.emit('joinRoom', 'main');
       });
 
+      // Upon receiving a list of all users, update the dropdown menu
 			socket.on('clients', data => {
 				$('#clients')
 					.empty()
@@ -59,7 +60,8 @@
 						}
 					});
       });
-      
+
+      // Upon catching some event from the server, display the message on the screen.
       socket.on('userList', data => {
         $('#output')
             .prepend(`Users in room ${data.room}: ${data.clients}\n`);  
@@ -85,6 +87,7 @@
 					.prepend(`${data.from} to ${data.to}: ${data.message}\n`);
       });
 
+      // Upon receiving rooms list data, update dropdown menu
       socket.on('updateRooms', data => {
         $('#rooms').empty();
 					$.each(data.rooms, (k,v) => {
@@ -95,7 +98,8 @@
 								);
           });
 			});
-  
+      
+      // Request the server to relay a message to another user
 			$('#sendButton')
 				.on('click', () => {
 					socket.emit('message', {
@@ -104,6 +108,7 @@
 					});
         });
 
+      // Request the server to relay a message to a room
       $('#roomSendButton')
         .on('click', () => {
             socket.emit('roomMessage', {
@@ -112,21 +117,25 @@
             });
         });
 
+        // Request the server for all users in some room
       $('#listButton')
         .on('click', () => {
           socket.emit('listUsers', $('#rooms').val());
       });
 
+      // Request the server to join a selected room
       $('#joinButton')
         .on('click', () => {
           socket.emit('joinRoom', $('#rooms').val());
         });
 
+        //Given a name, request the server to create a new room
       $('#createButton')
         .on('click', () => {
           socket.emit('createRoom', $('#newRoomName').val());
         });
 
+        // Request the server to leave selected room
       $('#leaveButton')
         .on('click', () => {
           socket.emit('leaveRoom', $('#rooms').val());
