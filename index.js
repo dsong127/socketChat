@@ -119,11 +119,18 @@ io.on('connection', function(socket){
       // console.log(`clients: ${clients}`)
       io.to(socket.id).emit('userList', {'clients': clients, 'room': room});
     });
+  });
 
+  socket.on('sendFile', data => {
+    io.sockets.in(data.room).emit('sendFile', {
+      from: socket.id,
+      room: data.room,
+      file: data.file
+    });
   });
 
   // A user disconnected. Announce to everyone that the user disconnected.
-	socket.on('disconnect', function() {
+	socket.on('disconnect', () => {
 		clientsArr.splice(clientsArr.indexOf(socket.id), 1);
 
 		io.emit('clients', {

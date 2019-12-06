@@ -27,6 +27,7 @@
       <input id="message" type="text" placeholder="message">
       <input id="sendButton" type="button" value="DM">
       <input id="roomSendButton" type="button" value="Send to group">
+      <input type="file" id="fileInput" onchange="sendFile()">
       <br>  
       <pre id="output"></pre>
     </div>
@@ -48,13 +49,13 @@
 					.empty()
 					.each(function() {
 						for (var i = 0; i < data.clients.length; i += 1) {
-							jQuery(this)
-								.append(jQuery('<option></option>')
+							$(this)
+								.append($('<option></option>')
 									.val(data.clients[i])
 									.text(data.clients[i])
 								);
 							if (data.clients[i] === socket.id) {
-								jQuery(this).find('option').last()
+								$(this).find('option').last()
 									.text(data.clients[i] + ' - me');
 							}
 						}
@@ -69,7 +70,7 @@
 
 			socket.on('message', data => {
 				$('#output')
-					.prepend(`${data.from} to ${data.to}: ${data.strMessage}\n`);
+					.prepend(`${data.from} to ${data.to}: ${data.message}\n`);
       });
 
       socket.on('newUser', data => {
@@ -87,12 +88,20 @@
 					.prepend(`${data.from} to ${data.to}: ${data.message}\n`);
       });
 
+      socket.on('sendFile', data => {
+        $('#output')
+          .prepend($('<br>'))
+          .prepend($(`<img src="${data.file}"/>\n`))
+          .prepend(`${data.from} to ${data.room}: \n`)
+          .prepend($('<br>'))
+      });
+
       // Upon receiving rooms list data, update dropdown menu
       socket.on('updateRooms', data => {
         $('#rooms').empty();
 					$.each(data.rooms, (k,v) => {
               $('#rooms')
-								.append(jQuery('<option></option>')
+								.append($('<option></option>')
 									.val(v)
 									.text(v)
 								);
@@ -104,7 +113,7 @@
 				.on('click', () => {
 					socket.emit('message', {
 						'to': $('#clients').val(),
-						'strMessage': $('#message').val()
+						'message': $('#message').val()
 					});
         });
 
@@ -140,6 +149,27 @@
         .on('click', () => {
           socket.emit('leaveRoom', $('#rooms').val());
         });
+
+        function sendFile() {
+          var preview = document.querySelector('img');
+          var file    = document.querySelector('input[type=file]').files[0];
+          var reader  = new FileReader();
+
+          if (file) {
+            reader.readAsDataURL(file);
+          }
+
+          reader.onload = readerEvent => {
+            var content = readerEvent.target.result;
+            socket.emit('sendFile', 
+            {
+              file: content,
+              room: $('#rooms').val()
+            }
+          );
+        }  
+      }
+
 		</script>
 
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
